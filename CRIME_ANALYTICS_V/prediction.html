@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crime Prediction — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <div class="alert alert-info">🔮 Predictions are generated using linear regression on historical data (2021–2025). Results are indicative.</div>
+
+    <div class="grid-1-2 section">
+      <!-- Controls -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Prediction Parameters</div></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <select class="form-control" id="predDistrict"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Crime Type</label>
+            <select class="form-control" id="predCrimeType"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Year</label>
+            <select class="form-control" id="predYear">
+              <option value="2026">2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="runPrediction()">🔮 Generate Prediction</button>
+
+          <hr class="divider">
+          <div id="predResult" style="display:none">
+            <div class="stat-card" style="--accent-color:#7c3aed">
+              <div class="stat-icon" style="background:rgba(124,58,237,0.15)">🔮</div>
+              <div class="stat-info">
+                <div class="stat-value" id="predValue">—</div>
+                <div class="stat-label" id="predLabel">Predicted crimes</div>
+                <div class="stat-change" id="predChange"></div>
+              </div>
+            </div>
+            <div id="predInsight" class="alert alert-warning" style="margin-top:14px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Historical + Predicted Trend</div><div class="card-subtitle" id="chartSubtitle">Select parameters and predict</div></div>
+        <div class="card-body"><div class="chart-container" style="height:340px"><canvas id="predChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- All districts prediction table -->
+    <div class="card section">
+      <div class="card-header">
+        <div><div class="card-title">District-wise Prediction Summary</div><div class="card-subtitle">Predicted total crimes for 2026 across all districts</div></div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap"><table id="predTable">
+          <thead><tr><th>#</th><th>District</th><th>2023 Actual</th><th>2024 Actual</th><th>2025 Actual</th><th>2026 Predicted</th><th>Trend</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/prediction.js"></script>
+</body>
+</html>

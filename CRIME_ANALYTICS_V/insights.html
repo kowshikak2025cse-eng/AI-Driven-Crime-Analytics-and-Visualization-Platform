@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Insights — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .insight-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+  .insight-card { animation: fadeInUp 0.5s ease forwards; opacity:0; }
+  .insight-card:nth-child(1){animation-delay:.05s} .insight-card:nth-child(2){animation-delay:.1s}
+  .insight-card:nth-child(3){animation-delay:.15s} .insight-card:nth-child(4){animation-delay:.2s}
+  .insight-card:nth-child(5){animation-delay:.25s} .insight-card:nth-child(6){animation-delay:.3s}
+  .insight-card:nth-child(7){animation-delay:.35s} .insight-card:nth-child(8){animation-delay:.4s}
+  .severity-bar { height:4px; border-radius:2px; margin-top:12px; }
+  .typing-effect { border-right:2px solid var(--accent); animation:blink 0.8s infinite; }
+  @keyframes blink { 0%,100%{border-color:var(--accent)} 50%{border-color:transparent} }
+  @media(max-width:768px){.insight-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <div class="alert alert-info">🤖 AI Insights are generated automatically from statistical analysis of the crime dataset. Updated in real-time.</div>
+
+    <!-- Summary bar -->
+    <div class="grid-4 section" id="insightKPI"></div>
+
+    <!-- Insights grid -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">🤖 AI-Generated Insights</div>
+        <button class="btn btn-primary btn-sm" onclick="regenerate()">↺ Regenerate</button>
+      </div>
+      <div class="insight-grid" id="insightGrid"></div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Crime Velocity (Month-over-Month)</div></div>
+        <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="velocityChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top Emerging Threats</div></div>
+        <div class="card-body" id="emergingThreats"></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/insights.js"></script>
+</body>
+</html>

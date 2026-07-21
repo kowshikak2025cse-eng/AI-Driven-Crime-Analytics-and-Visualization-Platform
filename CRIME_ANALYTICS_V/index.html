@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <!-- KPI Row -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- Row 1: Trend + Category -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Crime Trends (Monthly)</div><div class="card-subtitle">All districts · Current year</div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="trendChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Crime Category Distribution</div><div class="card-subtitle">By category type</div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:260px"><canvas id="categoryChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Row 2: Top Districts + Monthly Bar -->
+    <div class="grid-2-1 section">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Monthly Crime Analysis</div><div class="card-subtitle">Year-over-year comparison</div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="monthlyChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Top Districts</div><div class="card-subtitle">By total crime count</div></div></div>
+        <div class="card-body" id="topDistricts"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Crime Rate Comparison + Recent Records -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Crime Rate Comparison</div><div class="card-subtitle">District-wise radar</div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="radarChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Crime Type Breakdown</div><div class="card-subtitle">Top crime types</div></div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="typeChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Recent Records Table -->
+    <div class="card section">
+      <div class="card-header">
+        <div><div class="card-title">Recent Crime Records</div><div class="card-subtitle">Latest 20 entries</div></div>
+        <a href="search.html" class="btn btn-outline btn-sm">View All →</a>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap"><table id="recentTable">
+          <thead><tr><th>FIR Number</th><th>Date</th><th>District</th><th>Crime Type</th><th>Status</th><th>Arrest</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer">
+    <span>© 2025 Karnataka Police — Crime Intelligence Unit</span>
+    <span>Data updated: <strong id="lastUpdate"></strong></span>
+  </footer>
+</div>
+
+<script src="js/auth.js"></script>`n<script src="js/data.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

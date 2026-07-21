@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+
+<div class="auth-bg"><span></span><span></span><span></span></div>
+
+<div class="auth-wrapper" style="max-width:500px">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🛡️</div>
+      <div class="auth-logo-title">CrimeAnalytics</div>
+      <div class="auth-logo-sub">Karnataka Police Intelligence Unit</div>
+    </div>
+
+    <div class="auth-title">Create Account</div>
+    <div class="auth-subtitle">Register to access the crime analytics platform</div>
+
+    <div id="alertBox" style="display:none"></div>
+
+    <form id="registerForm" onsubmit="handleRegister(event)" autocomplete="off">
+
+      <label class="auth-label">Full Name</label>
+      <div class="input-group">
+        <span class="input-icon">👤</span>
+        <input type="text" id="name" class="form-control" placeholder="e.g. Ravi Kumar" required minlength="3">
+      </div>
+
+      <label class="auth-label">Email Address</label>
+      <div class="input-group">
+        <span class="input-icon">✉️</span>
+        <input type="email" id="email" class="form-control" placeholder="your@ksp.gov.in" required>
+      </div>
+
+      <label class="auth-label">Select Role</label>
+      <div class="role-select-grid" id="roleGrid">
+        <div class="role-option selected" data-role="Analyst" onclick="selectRole(this)">
+          <div class="role-icon">📊</div>
+          <div class="role-name">Analyst</div>
+        </div>
+        <div class="role-option" data-role="Viewer" onclick="selectRole(this)">
+          <div class="role-icon">👁</div>
+          <div class="role-name">Viewer</div>
+        </div>
+        <div class="role-option" data-role="District Admin" onclick="selectRole(this)">
+          <div class="role-icon">📍</div>
+          <div class="role-name">District Admin</div>
+        </div>
+        <div class="role-option" data-role="Super Admin" onclick="selectRole(this)">
+          <div class="role-icon">⚙️</div>
+          <div class="role-name">Super Admin</div>
+        </div>
+      </div>
+      <input type="hidden" id="selectedRole" value="Analyst">
+
+      <label class="auth-label">Password</label>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="password" class="form-control" placeholder="Min 8 chars, 1 uppercase, 1 number" required oninput="checkStrength(this.value)">
+        <button type="button" class="pwd-toggle" onclick="togglePwd('password',this)">👁</button>
+      </div>
+      <div class="pwd-strength">
+        <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="strengthFill" style="width:0%"></div></div>
+        <div class="pwd-strength-text" id="strengthText">Enter a password</div>
+      </div>
+
+      <label class="auth-label" style="margin-top:14px">Confirm Password</label>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="confirmPwd" class="form-control" placeholder="Re-enter your password" required>
+        <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPwd',this)">👁</button>
+      </div>
+
+      <label class="checkbox-wrap" style="margin-bottom:20px;margin-top:4px">
+        <input type="checkbox" id="terms" required>
+        I agree to the <a href="#" class="auth-link">Terms of Service</a> and <a href="#" class="auth-link">Privacy Policy</a>
+      </label>
+
+      <button type="submit" class="auth-btn" id="registerBtn">
+        <div class="btn-spinner"></div>
+        <span class="btn-text">🚀 Create Account</span>
+      </button>
+    </form>
+
+    <div class="auth-footer-text">
+      Already have an account? <a href="login.html" class="auth-link">Sign in</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  if (Auth.isLoggedIn()) window.location.href = 'index.html';
+
+  function selectRole(el) {
+    document.querySelectorAll('.role-option').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('selectedRole').value = el.dataset.role;
+  }
+
+  function checkStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= 8)          score++;
+    if (/[A-Z]/.test(pwd))        score++;
+    if (/[0-9]/.test(pwd))        score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    const levels = [
+      { w:'0%',   bg:'transparent', t:'Enter a password' },
+      { w:'25%',  bg:'#ef4444',     t:'Weak' },
+      { w:'50%',  bg:'#f59e0b',     t:'Fair' },
+      { w:'75%',  bg:'#4f8ef7',     t:'Good' },
+      { w:'100%', bg:'#10b981',     t:'Strong ✓' },
+    ];
+    fill.style.width      = levels[score].w;
+    fill.style.background = levels[score].bg;
+    text.textContent      = levels[score].t;
+    text.style.color      = levels[score].bg || '#64748b';
+  }
+
+  function handleRegister(e) {
+    e.preventDefault();
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const pwd     = document.getElementById('password').value;
+    const confirm = document.getElementById('confirmPwd').value;
+    const role    = document.getElementById('selectedRole').value;
+
+    if (pwd !== confirm) { showAlert('error','❌ Passwords do not match.'); return; }
+    if (pwd.length < 8)  { showAlert('error','❌ Password must be at least 8 characters.'); return; }
+    if (!/[A-Z]/.test(pwd)) { showAlert('error','❌ Password must contain at least one uppercase letter.'); return; }
+    if (!/[0-9]/.test(pwd)) { showAlert('error','❌ Password must contain at least one number.'); return; }
+
+    const btn = document.getElementById('registerBtn');
+    btn.classList.add('loading'); btn.disabled = true;
+    hideAlert();
+
+    setTimeout(() => {
+      const result = Auth.register({ name, email, password: pwd, role });
+      btn.classList.remove('loading'); btn.disabled = false;
+
+      if (result.ok) {
+        showAlert('success', '✅ Account created! Redirecting to login...');
+        setTimeout(() => window.location.href = 'login.html', 1500);
+      } else {
+        showAlert('error', '❌ ' + result.msg);
+      }
+    }, 800);
+  }
+
+  function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function showAlert(type, msg) {
+    const box = document.getElementById('alertBox');
+    box.style.display = 'flex';
+    box.className = `auth-alert auth-alert-${type}`;
+    box.textContent = msg;
+  }
+  function hideAlert() { document.getElementById('alertBox').style.display = 'none'; }
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+
+<!-- Animated background -->
+<div class="auth-bg"><span></span><span></span><span></span></div>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🛡️</div>
+      <div class="auth-logo-title">CrimeAnalytics</div>
+      <div class="auth-logo-sub">Karnataka Police Intelligence Unit</div>
+    </div>
+
+    <!-- Title -->
+    <div class="auth-title">Welcome back</div>
+    <div class="auth-subtitle">Sign in to access the crime analytics dashboard</div>
+
+    <!-- Alert -->
+    <div id="alertBox" style="display:none"></div>
+
+    <!-- Form -->
+    <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
+
+      <label class="auth-label">Email Address</label>
+      <div class="input-group">
+        <span class="input-icon">✉️</span>
+        <input type="email" id="email" class="form-control" placeholder="your@ksp.gov.in" required autocomplete="username">
+      </div>
+
+      <label class="auth-label">Password</label>
+      <div class="input-group">
+        <span class="input-icon">🔒</span>
+        <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+        <button type="button" class="pwd-toggle" onclick="togglePwd('password', this)">👁</button>
+      </div>
+
+      <div class="auth-row">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="remember"> Remember me
+        </label>
+        <a href="forgot.html" class="auth-link" style="font-size:13px">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="auth-btn" id="loginBtn">
+        <div class="btn-spinner"></div>
+        <span class="btn-text">🔐 Sign In</span>
+      </button>
+    </form>
+
+    <div class="auth-divider">or</div>
+
+    <!-- Demo credentials -->
+    <div style="background:rgba(79,142,247,0.06);border:1px solid rgba(79,142,247,0.15);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;margin-bottom:10px">Demo Credentials</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="demo-cred" onclick="fillDemo('admin@ksp.gov.in','Admin@123')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s" onmouseover="this.style.borderColor='rgba(79,142,247,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
+          <div><div style="font-size:13px;font-weight:600;color:#e2e8f0">Super Admin</div><div style="font-size:11px;color:#64748b">admin@ksp.gov.in</div></div>
+          <span style="font-size:11px;color:#4f8ef7;font-weight:600">Click to fill →</span>
+        </div>
+        <div class="demo-cred" onclick="fillDemo('analyst@ksp.gov.in','Analyst@123')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s" onmouseover="this.style.borderColor='rgba(79,142,247,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
+          <div><div style="font-size:13px;font-weight:600;color:#e2e8f0">Analyst</div><div style="font-size:11px;color:#64748b">analyst@ksp.gov.in</div></div>
+          <span style="font-size:11px;color:#4f8ef7;font-weight:600">Click to fill →</span>
+        </div>
+        <div class="demo-cred" onclick="fillDemo('viewer@ksp.gov.in','Viewer@123')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid rgba(255,255,255,0.06);transition:all 0.2s" onmouseover="this.style.borderColor='rgba(79,142,247,0.3)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
+          <div><div style="font-size:13px;font-weight:600;color:#e2e8f0">Viewer</div><div style="font-size:11px;color:#64748b">viewer@ksp.gov.in</div></div>
+          <span style="font-size:11px;color:#4f8ef7;font-weight:600">Click to fill →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-footer-text">
+      Don't have an account? <a href="register.html" class="auth-link">Create account</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // Redirect if already logged in
+  if (Auth.isLoggedIn()) window.location.href = 'index.html';
+
+  function handleLogin(e) {
+    e.preventDefault();
+    const btn   = document.getElementById('loginBtn');
+    const email = document.getElementById('email').value.trim();
+    const pwd   = document.getElementById('password').value;
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+    hideAlert();
+
+    setTimeout(() => {
+      const result = Auth.login(email, pwd);
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      if (result.ok) {
+        showAlert('success', `✅ Welcome back, ${result.session.name}! Redirecting...`);
+        setTimeout(() => window.location.href = 'index.html', 1000);
+      } else {
+        showAlert('error', '❌ ' + result.msg);
+        document.getElementById('password').value = '';
+      }
+    }, 800);
+  }
+
+  function fillDemo(email, pwd) {
+    document.getElementById('email').value    = email;
+    document.getElementById('password').value = pwd;
+    document.getElementById('email').focus();
+  }
+
+  function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function showAlert(type, msg) {
+    const box = document.getElementById('alertBox');
+    box.style.display = 'flex';
+    box.className = `auth-alert auth-alert-${type}`;
+    box.textContent = msg;
+  }
+  function hideAlert() {
+    document.getElementById('alertBox').style.display = 'none';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reports — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  .report-type-card {
+    cursor: pointer;
+    text-align: center;
+    padding: 32px 20px;
+    transition: var(--transition);
+  }
+  .report-type-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(79,142,247,0.4); }
+  .report-type-card .r-icon { font-size: 44px; margin-bottom: 14px; }
+  .report-type-card .r-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .report-type-card .r-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  .preview-box {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+  .preview-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 18px; margin-bottom: 22px;
+  }
+  .preview-section { margin-bottom: 24px; }
+  .preview-section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 12px;
+  }
+  .preview-stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .preview-stat-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px; text-align: center;
+  }
+  .preview-stat-box .v { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .preview-stat-box .l { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .history-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-icon { font-size: 22px; }
+  .history-info { flex: 1; }
+  .history-name { font-size: 13px; font-weight: 600; }
+  .history-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  @media(max-width:768px){ .preview-stat-row { grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <!-- Report Type Cards -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">📄 Select Report Type</div>
+      </div>
+      <div class="grid-3">
+        <div class="card report-type-card" onclick="quickGenerate('summary')">
+          <div class="r-icon">📊</div>
+          <div class="r-title">Summary Report</div>
+          <div class="r-desc">Overall crime statistics, KPIs, arrest rates and resolution trends</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:16px;width:100%">⬇ Download PDF</button>
+        </div>
+        <div class="card report-type-card" onclick="quickGenerate('district')">
+          <div class="r-icon">📍</div>
+          <div class="r-title">District Report</div>
+          <div class="r-desc">District-wise breakdown, comparison and performance metrics</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:16px;width:100%">⬇ Download PDF</button>
+        </div>
+        <div class="card report-type-card" onclick="quickGenerate('prediction')">
+          <div class="r-icon">🔮</div>
+          <div class="r-title">Prediction Report</div>
+          <div class="r-desc">2026 crime forecasts with AI-generated insights and recommendations</div>
+          <button class="btn btn-primary btn-sm" style="margin-top:16px;width:100%">⬇ Download PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Report Config -->
+    <div class="grid-2-1 section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚙️ Custom Report Builder</div><div class="card-subtitle">Configure filters before generating</div></div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Report Type</label>
+              <select class="form-control" id="rType">
+                <option value="summary">Summary Report</option>
+                <option value="district">District Report</option>
+                <option value="prediction">Prediction Report</option>
+                <option value="full">Full Comprehensive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year</label>
+              <select class="form-control" id="rYear"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">District</label>
+              <select class="form-control" id="rDistrict"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Crime Category</label>
+              <select class="form-control" id="rCategory"></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+            <button class="btn btn-primary" onclick="generateReport()">📄 Generate PDF</button>
+            <button class="btn btn-outline" onclick="previewReport()">👁 Preview</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report History -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">🕐 Recent Reports</div></div>
+        <div class="card-body" id="reportHistory">
+          <div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">No reports generated yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Area -->
+    <div id="previewArea" style="display:none" class="section">
+      <div class="section-header">
+        <div class="section-title">👁 Report Preview</div>
+        <button class="btn btn-primary btn-sm" onclick="generateReport()">⬇ Download This Report</button>
+      </div>
+      <div class="preview-box" id="previewContent"></div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/reports.js"></script>
+</body>
+</html>

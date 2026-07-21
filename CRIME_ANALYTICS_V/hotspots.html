@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crime Hotspots — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  #map { height: 520px; border-radius: var(--radius); border: 1px solid var(--border); }
+  .leaflet-popup-content-wrapper { background:#1e293b; color:#e2e8f0; border:1px solid rgba(255,255,255,0.1); border-radius:10px; }
+  .leaflet-popup-tip { background:#1e293b; }
+  .leaflet-popup-content { font-size:13px; line-height:1.6; }
+  .map-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; }
+  .legend-item { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); }
+  .legend-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .hotspot-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+  .hs-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; text-align:center; }
+  .hs-stat .val { font-size:24px; font-weight:800; }
+  .hs-stat .lbl { font-size:11px; color:var(--text-muted); margin-top:4px; }
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <!-- Stats -->
+    <div class="hotspot-stats" id="hsStats"></div>
+
+    <!-- Filters + Map -->
+    <div class="card section">
+      <div class="card-header">
+        <div><div class="card-title">Interactive Crime Hotspot Map</div><div class="card-subtitle">Karnataka — Click markers for details</div></div>
+        <button class="btn btn-outline btn-sm" onclick="resetFilters()">↺ Reset</button>
+      </div>
+      <div class="card-body">
+        <!-- Filter Row -->
+        <div class="grid-3" style="margin-bottom:16px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">District</label>
+            <select class="form-control" id="hsDistrict" onchange="applyFilters()"></select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Crime Type</label>
+            <select class="form-control" id="hsCrimeType" onchange="applyFilters()"></select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Year</label>
+            <select class="form-control" id="hsYear" onchange="applyFilters()"></select>
+          </div>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>High Risk (5+ crimes nearby)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Medium Risk (2–4 crimes nearby)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Low Risk (1 crime)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hotspot Table -->
+    <div class="card section">
+      <div class="card-header"><div class="card-title">Hotspot Summary</div><div class="card-subtitle" id="hsCount">Loading...</div></div>
+      <div class="card-body">
+        <div class="table-wrap"><table id="hsTable">
+          <thead><tr><th>District</th><th>Crime Type</th><th>Count</th><th>Risk Level</th><th>Lat</th><th>Lng</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/hotspots.js"></script>
+</body>
+</html>

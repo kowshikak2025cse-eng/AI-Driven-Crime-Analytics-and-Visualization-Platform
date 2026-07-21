@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .filter-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:24px; }
+  .filter-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .filter-actions { display:flex; gap:12px; margin-top:16px; }
+  .result-count { font-size:13px; color:var(--text-muted); }
+  .pagination { display:flex; gap:8px; align-items:center; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .page-btn { background:var(--bg-card); border:1px solid var(--border); color:var(--text-secondary); padding:6px 12px; border-radius:6px; cursor:pointer; font-size:13px; transition:var(--transition); }
+  .page-btn:hover, .page-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  @media(max-width:768px){.filter-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <!-- Search Bar -->
+    <div class="filter-panel">
+      <div class="section-title" style="margin-bottom:16px">🔍 Search Crime Records</div>
+      <div class="search-bar" style="margin-bottom:16px">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="globalSearch" placeholder="Search by FIR number, district, crime type, police station..." oninput="doSearch()">
+      </div>
+      <div class="filter-grid">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">District</label>
+          <select class="form-control" id="fDistrict" onchange="doSearch()"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Crime Type</label>
+          <select class="form-control" id="fCrimeType" onchange="doSearch()"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Year</label>
+          <select class="form-control" id="fYear" onchange="doSearch()"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Status</label>
+          <select class="form-control" id="fStatus" onchange="doSearch()"></select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Date From</label>
+          <input type="date" class="form-control" id="fDateFrom" onchange="doSearch()">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Date To</label>
+          <input type="date" class="form-control" id="fDateTo" onchange="doSearch()">
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" onclick="doSearch()">🔍 Search</button>
+        <button class="btn btn-outline" onclick="resetSearch()">↺ Reset</button>
+        <button class="btn btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Search Results</div><div class="result-count" id="resultCount">Loading...</div></div>
+      </div>
+      <div class="card-body">
+        <div class="table-wrap">
+          <table id="searchTable">
+            <thead><tr>
+              <th>FIR Number</th><th>Date</th><th>District</th><th>Police Station</th>
+              <th>Crime Type</th><th>Category</th><th>Status</th><th>Arrest</th><th>Victims</th>
+            </tr></thead>
+            <tbody id="searchBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>
