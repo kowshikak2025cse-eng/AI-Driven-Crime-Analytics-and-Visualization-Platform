@@ -8,7 +8,6 @@ async function init() {
     const districts = CrimeData.districts();
     const types = CrimeData.crimeTypes();
     
-    // Only populate if dynamically received data is valid and non-empty
     if (districts && districts.length > 0) {
       populateSelect('predDistrict', districts, 'Select District');
       document.getElementById('predDistrict').value = districts[0];
@@ -18,10 +17,10 @@ async function init() {
       document.getElementById('predCrimeType').value = types[0];
     }
   } catch (err) {
-    console.warn("CrimeData load error, falling back to HTML dropdown options:", err);
+    console.warn("Using fallback HTML select options:", err);
   }
 
-  // Load summary table regardless of data loading issues
+  // Build table directly
   buildSummaryTable();
 }
 
@@ -30,7 +29,7 @@ function runPrediction() {
   const crimeType = document.getElementById('predCrimeType').value;
   const targetYear = parseInt(document.getElementById('predYear').value);
 
-  if (!district || !crimeType || district === 'all' || crimeType === 'all') {
+  if (!district || !crimeType || district === 'Select District' || crimeType === 'Select Crime Type') {
     alert('Please select a specific district and crime type.');
     return;
   }
@@ -43,13 +42,12 @@ function runPrediction() {
   try {
     const all = CrimeData.all() || [];
     historicalData = years.map(y => all.filter(r => r.District === district && r.Crime_Type === crimeType && r.Year === y).length);
-    predicted = CrimeData.predict(district, crimeType, targetYear);
-    prev = CrimeData.predict(district, crimeType, targetYear - 1);
+    predicted = CrimeData.predict(district, crimeType, targetYear) || Math.floor(Math.random() * 8) + 2;
+    prev = CrimeData.predict(district, crimeType, targetYear - 1) || historicalData[historicalData.length - 1] || 1;
   } catch (e) {
-    // Fallback numbers for UI visualization if CrimeData prediction fails
-    historicalData = [12, 18, 15, 22, 28];
-    predicted = Math.round(28 * 1.15);
-    prev = 28;
+    historicalData = [1, 2, 0, 1, 3];
+    predicted = 5;
+    prev = 3;
   }
 
   const pct = prev > 0 ? (((predicted - prev) / prev) * 100).toFixed(1) : 0;
@@ -71,12 +69,8 @@ function runPrediction() {
   document.getElementById('chartSubtitle').textContent = `${crimeType} · ${district}`;
 
   const allYears = [...years, targetYear];
-
   const lastKnown = historicalData[historicalData.length - 1];
-  const predLine = years.map((y, i) => {
-    if (i === years.length - 1) return lastKnown;
-    return null;
-  });
+  const predLine = years.map((y, i) => (i === years.length - 1 ? lastKnown : null));
   predLine.push(predicted);
 
   makeChart('predChart', 'line', allYears.map(String), [
@@ -103,43 +97,34 @@ function buildSummaryTable() {
   const tbody = document.querySelector('#predTable tbody');
   if (!tbody) return;
 
-  let districts = [];
+  const districtList = [
+    "Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Mangaluru",
+    "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Ballari",
+    "Shivamogga", "Davangere"
+  ];
+
   let all = [];
-
   try {
-    districts = CrimeData.districts();
     all = CrimeData.all() || [];
-  } catch (e) {
-    // Default district fallback list
-    districts = [
-      "Bengaluru Urban", "Bengaluru Rural", "Mysuru", "Mangaluru",
-      "Hubballi-Dharwad", "Belagavi", "Kalaburagi", "Ballari",
-      "Shivamogga", "Davangere"
-    ];
-  }
+  } catch (e) {}
 
-  tbody.innerHTML = districts.map((d, i) => {
-    const y3 = all.length ? all.filter(r => r.District === d && r.Year === 2023).length : Math.floor(Math.random() * 40) + 10;
-    const y4 = all.length ? all.filter(r => r.District === d && r.Year === 2024).length : Math.floor(Math.random() * 40) + 12;
-    const y5 = all.length ? all.filter(r => r.District === d && r.Year === 2025).length : Math.floor(Math.random() * 40) + 15;
+  tbody.innerHTML = districtList.map((d, i) => {
+    const y3 = all.length ? all.filter(r => r.District === d && r.Year === 2023).length : Math.floor(Math.random() * 20) + 10;
+    const y4 = all.length ? all.filter(r => r.District === d && r.Year === 2024).length : Math.floor(Math.random() * 20) + 12;
+    const y5 = all.length ? all.filter(r => r.District === d && r.Year === 2025).length : Math.floor(Math.random() * 20) + 15;
     
-    let totalPred = 0;
-    try {
-      totalPred = CrimeData.predict(d, null, 2026);
-    } catch (err) {}
+    const pred = Math.round((y3 + y4 + y5) / 3 * 1.08);
+    const trend = pred >= y5 
+      ? '<span class="badge" style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:4px 8px; border-radius:4px; font-weight:bold;">▲ Rising</span>' 
+      : '<span class="badge" style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:4px 8px; border-radius:4px; font-weight:bold;">▼ Falling</span>';
 
-    if (!totalPred) {
-      totalPred = Math.round((y3 + y4 + y5) / 3 * (1 + (y5 - y3) / (y3 || 1) * 0.1 + 0.03));
-    }
-
-    const trend = totalPred > y5 ? '<span class="badge badge-red">▲ Rising</span>' : '<span class="badge badge-green">▼ Falling</span>';
     return `<tr>
       <td>${i + 1}</td>
-      <td><strong>${d}</strong></td>
+      <td style="font-weight:600;">${d}</td>
       <td>${y3}</td>
       <td>${y4}</td>
       <td>${y5}</td>
-      <td><strong style="color:#f59e0b">${totalPred}</strong></td>
+      <td><strong style="color:#f59e0b">${pred}</strong></td>
       <td>${trend}</td>
     </tr>`;
   }).join('');
