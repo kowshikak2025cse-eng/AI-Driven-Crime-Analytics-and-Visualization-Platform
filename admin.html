@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .admin-tabs { display:flex; gap:4px; margin-bottom:24px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:4px; width:fit-content; }
+  .tab-btn { padding:9px 20px; border-radius:7px; border:none; background:transparent; color:var(--text-secondary); font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); }
+  .tab-btn.active { background:var(--accent); color:#fff; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 48px 24px; text-align: center; cursor: pointer;
+    transition: var(--transition);
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(79,142,247,0.05); }
+  .upload-zone .upload-icon { font-size: 48px; margin-bottom: 12px; }
+  .upload-zone .upload-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .upload-zone .upload-sub { font-size: 13px; color: var(--text-muted); }
+
+  .user-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    transition: var(--transition);
+  }
+  .user-card:hover { background: var(--bg-card-hover); }
+  .user-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; flex-shrink: 0;
+  }
+  .user-info { flex: 1; }
+  .user-name { font-size: 14px; font-weight: 600; }
+  .user-role { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .user-actions { display: flex; gap: 8px; }
+
+  .log-item { padding: 10px 0; border-bottom: 1px solid var(--border); display:flex; gap:12px; align-items:flex-start; }
+  .log-item:last-child { border-bottom: none; }
+  .log-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; flex-shrink:0; }
+  .log-msg { font-size: 13px; color: var(--text-secondary); }
+
+  .csv-preview { max-height: 400px; overflow-y: auto; }
+  .add-user-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <div class="alert alert-warning">⚠️ Admin panel is frontend-only. All changes are stored in browser memory and will reset on page refresh.</div>
+
+    <!-- Admin KPIs -->
+    <div class="grid-4 section" id="adminKPI"></div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchTab('upload')">📤 Upload CSV</button>
+      <button class="tab-btn" onclick="switchTab('data')">📋 View Data</button>
+      <button class="tab-btn" onclick="switchTab('users')">👥 Users</button>
+      <button class="tab-btn" onclick="switchTab('logs')">📝 Activity Log</button>
+    </div>
+
+    <!-- Tab: Upload CSV -->
+    <div class="tab-panel active" id="tab-upload">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📤 Upload Crime Data CSV</div></div>
+          <div class="card-body">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFile').click()"
+              ondragover="event.preventDefault();this.classList.add('drag-over')"
+              ondragleave="this.classList.remove('drag-over')"
+              ondrop="handleDrop(event)">
+              <div class="upload-icon">📂</div>
+              <div class="upload-title">Drop CSV file here or click to browse</div>
+              <div class="upload-sub">Supports .csv files with standard crime record format</div>
+              <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
+            </div>
+            <div id="uploadStatus" style="margin-top:16px"></div>
+            <hr class="divider">
+            <div class="card-title" style="margin-bottom:12px">Expected CSV Format</div>
+            <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#94a3b8;overflow-x:auto">
+              FIR_Number,Date,Year,District,Police_Station,Crime_Type,<br>
+              Crime_Category,Status,Arrest_Made,Victims,Latitude,Longitude
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 Upload Statistics</div></div>
+          <div class="card-body" id="uploadStats">
+            <div style="color:var(--text-muted);font-size:13px;text-align:center;padding:40px">
+              Upload a CSV file to see statistics here.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSV Preview -->
+      <div class="card section" id="csvPreviewCard" style="display:none">
+        <div class="card-header">
+          <div><div class="card-title">📋 CSV Preview</div><div class="card-subtitle" id="csvPreviewCount"></div></div>
+          <button class="btn btn-success btn-sm" onclick="mergeData()">✅ Merge into Dataset</button>
+        </div>
+        <div class="card-body csv-preview">
+          <div class="table-wrap"><table id="csvPreviewTable">
+            <thead><tr id="csvHeaders"></tr></thead>
+            <tbody id="csvBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: View Data -->
+    <div class="tab-panel" id="tab-data">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">📋 Dataset Viewer</div><div class="card-subtitle" id="dataCount"></div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-outline btn-sm" onclick="exportDataset()">⬇ Export JSON</button>
+            <button class="btn btn-danger btn-sm" onclick="resetDataset()">🗑 Reset to Default</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="search-bar" style="margin-bottom:16px">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="dataSearch" placeholder="Search records..." oninput="filterDataView()">
+          </div>
+          <div class="table-wrap">
+            <table id="dataTable">
+              <thead><tr><th>FIR Number</th><th>Date</th><th>District</th><th>Crime Type</th><th>Status</th><th>Arrest</th><th>Actions</th></tr></thead>
+              <tbody id="dataBody"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="dataPagination"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Users -->
+    <div class="tab-panel" id="tab-users">
+      <!-- Add User Form -->
+      <div class="add-user-form">
+        <div class="card-title" style="margin-bottom:16px">➕ Add New User</div>
+        <div class="grid-3">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="newName" placeholder="e.g. Ravi Kumar">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="newEmail" placeholder="e.g. ravi@ksp.gov.in">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Role</label>
+            <select class="form-control" id="newRole">
+              <option>Super Admin</option>
+              <option>District Admin</option>
+              <option>Analyst</option>
+              <option>Viewer</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="addUser()">➕ Add User</button>
+      </div>
+
+      <div class="grid-3" id="userGrid"></div>
+    </div>
+
+    <!-- Tab: Activity Log -->
+    <div class="tab-panel" id="tab-logs">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📝 Activity Log</div>
+          <button class="btn btn-outline btn-sm" onclick="clearLogs()">🗑 Clear</button>
+        </div>
+        <div class="card-body" id="activityLog"></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar"></aside>
+<div class="main-wrapper">
+  <header class="header" id="header"></header>
+  <main class="page-content">
+
+    <!-- Summary KPIs -->
+    <div class="grid-4 section" id="analyticsKPI"></div>
+
+    <!-- Year-wise + District-wise -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Year-wise Crime Comparison</div><div class="card-subtitle">2021–2025 total crimes</div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="yearChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">District-wise Comparison</div><div class="card-subtitle">Total crimes per district</div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="districtChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Category + Arrest Rate -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Crime Category Analysis</div><div class="card-subtitle">Distribution by category</div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="catAnalysisChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Arrest Rate by District</div><div class="card-subtitle">% of cases with arrest</div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="arrestChart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Case Resolution + Heatmap table -->
+    <div class="grid-2 section">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Case Resolution Percentage</div><div class="card-subtitle">Closed + Chargesheeted cases</div></div>
+        <div class="card-body"><div class="chart-container" style="height:280px"><canvas id="resolutionChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Year × Crime Type Heatmap</div><div class="card-subtitle">Crime count matrix</div></div>
+        <div class="card-body" id="heatmapTable" style="overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- Detailed stats table -->
+    <div class="card section">
+      <div class="card-header"><div class="card-title">District Performance Summary</div></div>
+      <div class="card-body">
+        <div class="table-wrap"><table id="perfTable">
+          <thead><tr><th>District</th><th>Total</th><th>Arrests</th><th>Arrest Rate</th><th>Resolved</th><th>Resolution %</th><th>Pending</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </main>
+  <footer class="footer"><span>© 2025 Karnataka Police — Crime Intelligence Unit</span></footer>
+</div>
+<script src="js/data.js"></script>
+<script src="js/analytics.js"></script>
+</body>
+</html>

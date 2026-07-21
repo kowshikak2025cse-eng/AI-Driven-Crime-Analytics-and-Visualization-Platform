@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forgot Password — Crime Analytics Karnataka</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-body">
+
+<div class="auth-bg"><span></span><span></span><span></span></div>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🛡️</div>
+      <div class="auth-logo-title">CrimeAnalytics</div>
+      <div class="auth-logo-sub">Karnataka Police Intelligence Unit</div>
+    </div>
+
+    <div id="alertBox" style="display:none"></div>
+
+    <!-- Step 1: Enter Email -->
+    <div id="step1">
+      <div class="auth-title">Forgot Password?</div>
+      <div class="auth-subtitle">Enter your registered email to receive a verification code</div>
+
+      <form onsubmit="sendOTP(event)">
+        <label class="auth-label">Email Address</label>
+        <div class="input-group">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="resetEmail" class="form-control" placeholder="your@ksp.gov.in" required>
+        </div>
+        <button type="submit" class="auth-btn" id="sendBtn">
+          <div class="btn-spinner"></div>
+          <span class="btn-text">📨 Send Verification Code</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Step 2: Enter OTP -->
+    <div id="step2" style="display:none">
+      <div class="auth-title">Enter OTP</div>
+      <div class="auth-subtitle" id="otpSubtitle">Enter the 6-digit code sent to your email</div>
+
+      <div class="otp-grid" id="otpGrid">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,0)">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,1)">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,2)">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,3)">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,4)">
+        <input class="otp-input" maxlength="1" type="text" inputmode="numeric" oninput="otpNext(this,5)">
+      </div>
+
+      <div style="text-align:center;margin-bottom:16px">
+        <span style="font-size:13px;color:#64748b">Didn't receive? </span>
+        <button type="button" class="auth-link" id="resendBtn" onclick="resendOTP()" style="background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#4f8ef7">Resend (<span id="countdown">30</span>s)</button>
+      </div>
+
+      <button type="button" class="auth-btn" onclick="verifyOTP()">
+        <div class="btn-spinner"></div>
+        <span class="btn-text">✅ Verify Code</span>
+      </button>
+    </div>
+
+    <!-- Step 3: New Password -->
+    <div id="step3" style="display:none">
+      <div class="auth-title">Set New Password</div>
+      <div class="auth-subtitle">Choose a strong new password for your account</div>
+
+      <form onsubmit="resetPassword(event)">
+        <label class="auth-label">New Password</label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="newPwd" class="form-control" placeholder="Min 8 chars, 1 uppercase, 1 number" required oninput="checkStrength(this.value)">
+          <button type="button" class="pwd-toggle" onclick="togglePwd('newPwd',this)">👁</button>
+        </div>
+        <div class="pwd-strength">
+          <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="strengthFill" style="width:0%"></div></div>
+          <div class="pwd-strength-text" id="strengthText">Enter a password</div>
+        </div>
+
+        <label class="auth-label" style="margin-top:14px">Confirm New Password</label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="confirmNewPwd" class="form-control" placeholder="Re-enter new password" required>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('confirmNewPwd',this)">👁</button>
+        </div>
+
+        <button type="submit" class="auth-btn" style="margin-top:16px">
+          <div class="btn-spinner"></div>
+          <span class="btn-text">🔐 Reset Password</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="auth-footer-text" style="margin-top:16px">
+      <a href="login.html" class="auth-link">← Back to Login</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  let generatedOTP = '';
+  let countdownTimer;
+
+  function sendOTP(e) {
+    e.preventDefault();
+    const email = document.getElementById('resetEmail').value.trim();
+    const btn   = document.getElementById('sendBtn');
+
+    // Check if email exists
+    const users = Auth.getUsers();
+    if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+      showAlert('error', '❌ No account found with this email address.');
+      return;
+    }
+
+    btn.classList.add('loading'); btn.disabled = true;
+    hideAlert();
+
+    setTimeout(() => {
+      btn.classList.remove('loading'); btn.disabled = false;
+      // Generate 6-digit OTP
+      generatedOTP = String(Math.floor(100000 + Math.random() * 900000));
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+      document.getElementById('otpSubtitle').textContent =
+        `Enter the 6-digit code sent to ${email} (Demo OTP: ${generatedOTP})`;
+      startCountdown();
+    }, 1000);
+  }
+
+  function otpNext(input, idx) {
+    input.value = input.value.replace(/\D/g,'');
+    const inputs = document.querySelectorAll('.otp-input');
+    if (input.value && idx < 5) inputs[idx+1].focus();
+    // Auto verify when all filled
+    const otp = [...inputs].map(i=>i.value).join('');
+    if (otp.length === 6) verifyOTP();
+  }
+
+  function verifyOTP() {
+    const inputs = document.querySelectorAll('.otp-input');
+    const entered = [...inputs].map(i=>i.value).join('');
+    if (entered.length < 6) { showAlert('error','❌ Please enter all 6 digits.'); return; }
+    if (entered !== generatedOTP) {
+      showAlert('error','❌ Invalid OTP. Please try again.');
+      inputs.forEach(i=>i.value=''); inputs[0].focus();
+      return;
+    }
+    clearInterval(countdownTimer);
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step3').style.display = 'block';
+    hideAlert();
+  }
+
+  function resetPassword(e) {
+    e.preventDefault();
+    const pwd     = document.getElementById('newPwd').value;
+    const confirm = document.getElementById('confirmNewPwd').value;
+    const email   = document.getElementById('resetEmail').value.trim();
+
+    if (pwd !== confirm) { showAlert('error','❌ Passwords do not match.'); return; }
+    if (pwd.length < 8)  { showAlert('error','❌ Password must be at least 8 characters.'); return; }
+    if (!/[A-Z]/.test(pwd)) { showAlert('error','❌ Must contain at least one uppercase letter.'); return; }
+    if (!/[0-9]/.test(pwd)) { showAlert('error','❌ Must contain at least one number.'); return; }
+
+    const result = Auth.resetPassword(email, pwd);
+    if (result.ok) {
+      showAlert('success','✅ Password reset successfully! Redirecting to login...');
+      setTimeout(() => window.location.href = 'login.html', 1800);
+    } else {
+      showAlert('error','❌ ' + result.msg);
+    }
+  }
+
+  function startCountdown() {
+    let secs = 30;
+    document.getElementById('resendBtn').disabled = true;
+    document.getElementById('resendBtn').style.opacity = '0.5';
+    countdownTimer = setInterval(() => {
+      secs--;
+      document.getElementById('countdown').textContent = secs;
+      if (secs <= 0) {
+        clearInterval(countdownTimer);
+        document.getElementById('resendBtn').disabled = false;
+        document.getElementById('resendBtn').style.opacity = '1';
+        document.getElementById('resendBtn').innerHTML = 'Resend Code';
+      }
+    }, 1000);
+  }
+
+  function resendOTP() {
+    generatedOTP = String(Math.floor(100000 + Math.random() * 900000));
+    document.getElementById('otpSubtitle').textContent =
+      `New OTP sent! (Demo OTP: ${generatedOTP})`;
+    document.querySelectorAll('.otp-input').forEach(i=>i.value='');
+    document.querySelector('.otp-input').focus();
+    document.getElementById('resendBtn').innerHTML = 'Resend (<span id="countdown">30</span>s)';
+    startCountdown();
+  }
+
+  function checkStrength(pwd) {
+    let score = 0;
+    if (pwd.length >= 8)          score++;
+    if (/[A-Z]/.test(pwd))        score++;
+    if (/[0-9]/.test(pwd))        score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    const levels = [
+      { w:'0%',   bg:'transparent', t:'Enter a password' },
+      { w:'25%',  bg:'#ef4444',     t:'Weak' },
+      { w:'50%',  bg:'#f59e0b',     t:'Fair' },
+      { w:'75%',  bg:'#4f8ef7',     t:'Good' },
+      { w:'100%', bg:'#10b981',     t:'Strong ✓' },
+    ];
+    document.getElementById('strengthFill').style.width      = levels[score].w;
+    document.getElementById('strengthFill').style.background = levels[score].bg;
+    document.getElementById('strengthText').textContent      = levels[score].t;
+    document.getElementById('strengthText').style.color      = levels[score].bg || '#64748b';
+  }
+
+  function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else                         { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function showAlert(type, msg) {
+    const box = document.getElementById('alertBox');
+    box.style.display = 'flex';
+    box.className = `auth-alert auth-alert-${type}`;
+    box.textContent = msg;
+  }
+  function hideAlert() { document.getElementById('alertBox').style.display = 'none'; }
+</script>
+</body>
+</html>
