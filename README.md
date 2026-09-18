@@ -2,7 +2,7 @@ AI-Driven Crime Analytics and Visualization Platform
 
 Project Overview
 
-   The AI-Driven Crime Analytics and Visualization Platform is a web-based application designed to analyze and visualize crime-related data. It provides an interactive platform to explore crime patterns, identify hotspots, and access analytics and prediction-related information.
+   The AI-Driven Crime Analytics and Visualization Platform is a web-based application designed to analyze,visualize crime-related data. It provides an interactive platform to explore crime patterns, identify hotspots, and access analytics and prediction-related information.
    The project aims to support better understanding of crime data through data visualization and analytics.
 
 Objectives
